@@ -1,71 +1,53 @@
-﻿@model ShoppingSystem.Services.PaginationService<ShoppingSystem.Models.Supermarket>
+﻿@model IEnumerable<ShoppingSystem.Models.Supermarket>
 
-@{
-    ViewData["Title"] = "Supermarkets";
-}
+	@{
+		ViewData["Title"] = "View";
+	}
 
-<h1>Supermarkets</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<form asp-controller="Supermarkets" asp-action="Index">
-    <label for="select-size">display on page by </label>
-    <select name="pageSize" id="select-size">
-        <option>2</option>
-        <option>5</option>
-        <option>10</option>
-        <option>20</option>
-    </select>
-    <div class="form-group">
-        <input type="submit" value="Choose" class="btn btn-primary" />
-    </div>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <p>Name</p>
-            </th>
-            <th>
-                <p>Address</p>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Address)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-@{
-    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-}
-
-<a asp-action="Index"
-   asp-route-pageNumber="@(Model.PageIndex - 1)"
-   asp-route-pageSize="@ViewBag.PageSize"
-   class="btn btn-default @prevDisabled">
-    Previous
-</a>
-<a asp-action="Index"
-   asp-route-pageNumber="@(Model.PageIndex + 1)"
-   asp-route-pageSize="@ViewBag.PageSize"
-   class="btn btn-default @nextDisabled">
-    Next
-</a>
+	<div class="d-flex">
+		<div class="mr-auto p-2">
+			<h1>List of Supermarkets</h1>
+		</div>
+		<div class="p-2">
+			<form method="get" asp-controller="Supermarkets" asp-action="Create">
+				<button type="submit" class="btn btn-primary">Create New</button>
+			</form>
+		</div>
+	</div>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					@Html.DisplayNameFor(model => model.Id)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Name)
+				</th>
+				<th>
+					@Html.DisplayNameFor(model => model.Address)
+				</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.Id)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Name)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Address)
+					</td>
+					<td>
+						@Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+						@Html.ActionLink("Details", "Details", new { id = item.Id }) |
+						@Html.ActionLink("Delete", "Delete", new { id = item.Id })
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>

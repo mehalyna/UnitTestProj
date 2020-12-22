@@ -5,22 +5,24 @@ using ShoppingSystem.Data;
 using ShoppingSystem.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using ShoppingSystem.Services;
 
 namespace ShoppingSystem.Controllers
 {
     public class CustomersController : Controller
     {
-        private readonly ShoppingContext context;
+        // private readonly ShoppingContext context;
+        public readonly ICustomers _customers;
 
-        public CustomersController(ShoppingContext context)
+        public CustomersController(ICustomers customers)
         {
-            this.context = context;
+            _customers = customers;
         }
 
         // GET: Customers
         public async Task<IActionResult> Index(string searchString, SortState sortOrder = SortState.LastNameAsc)
         {
-            var customers = from c in context.Customers
+            var customers = from c in await _customers.GetAllAsync()
                 select c;
 
             ViewData["CurrentFilter"] = searchString;
@@ -41,25 +43,20 @@ namespace ShoppingSystem.Controllers
                 SortState.AddressDesc => customers.OrderByDescending(c => c.Address),
                 _ => customers.OrderBy(c => c.LastName),
             };
-            return View(await customers.AsNoTracking().ToListAsync());
+            return View(customers);
         }
 
         // GET: Customers/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                return View(await _customers.GetByIdAsync(id));
             }
-
-            var customer = await context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (customer == null)
+            catch (Exception)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            return View(customer);
         }
 
         // GET: Customers/Create
@@ -75,22 +72,16 @@ namespace ShoppingSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                context.Add(customer);
-                await context.SaveChangesAsync();
+                await _customers.AddAsync(customer);
                 return RedirectToAction(nameof(Index));
             }
             return View(customer);
         }
 
         // GET: Customers/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var customer = await context.Customers.FindAsync(id);
+            var customer = await _customers.GetByIdAsync(id);
             if (customer == null)
             {
                 return NotFound();
@@ -112,35 +103,22 @@ namespace ShoppingSystem.Controllers
             {
                 try
                 {
-                    context.Update(customer);
-                    await context.SaveChangesAsync();
+                    await _customers.EditAsync(customer);
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CustomerExists(customer.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return BadRequest();
                 }
-                return RedirectToAction(nameof(Index));
-            }
+             }
             return View(customer);
         }
 
         // GET: Customers/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var customer = await context.Customers
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var customer = await _customers.GetByIdAsync(id);
+                
             if (customer == null)
             {
                 return NotFound();
@@ -154,15 +132,18 @@ namespace ShoppingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var customer = await context.Customers.FindAsync(id);
-            context.Customers.Remove(customer);
-            await context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _customers.DeleteAsync(id);
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
         }
 
-        private bool CustomerExists(int id)
-        {
-            return context.Customers.Any(e => e.Id == id);
-        }
+       
     }
 }

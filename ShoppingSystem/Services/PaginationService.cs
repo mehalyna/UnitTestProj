@@ -23,10 +23,10 @@ namespace ShoppingSystem.Services
 
         public bool HasNextPage { get => (PageIndex < TotalPages); }
 
-        public static async Task<PaginationService<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
+        public static async Task<PaginationService<T>> CreateAsync(IList<T> source, int pageIndex, int pageSize)
         {
-            var count = await source.CountAsync();
-            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+            var count = await source.AsQueryable().CountAsync();
+            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).AsQueryable().ToListAsync();
             return new PaginationService<T>(items, count, pageIndex, pageSize);
         }
     }

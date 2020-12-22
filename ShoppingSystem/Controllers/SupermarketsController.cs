@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ShoppingSystem.Data;
 using ShoppingSystem.Models;
 using ShoppingSystem.Services;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,37 +11,30 @@ namespace ShoppingSystem.Controllers
 {
     public class SupermarketsController : Controller
     {
-        private readonly ShoppingContext context;
+        private readonly ISupermarkets _supermarkets;
 
-        public SupermarketsController(ShoppingContext context)
+        public SupermarketsController(ISupermarkets supermarkets)
         {
-            this.context = context;
+            _supermarkets = supermarkets;
         }
 
         // GET: Supermarkets
-        public async Task<IActionResult> Index(int? pageNumber, int pageSize = 3)
+        public async Task<IActionResult> Index()
         {
-            ViewBag.PageSize = pageSize;
-            var supermarkets = from s in context.Supermarkets select s;
-            return View(await PaginationService<Supermarket>.CreateAsync(supermarkets.AsNoTracking(), pageNumber ?? 1, pageSize));
+            return View(await _supermarkets.GetAllAsync());
         }
 
         // GET: Supermarkets/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                return View(await _supermarkets.GetByIdAsync(id));
             }
-
-            var supermarket = await context.Supermarkets
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supermarket == null)
+            catch (Exception)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            return View(supermarket);
         }
 
         // GET: Supermarkets/Create
@@ -56,27 +50,23 @@ namespace ShoppingSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                context.Add(supermarket);
-                await context.SaveChangesAsync();
+                await _supermarkets.AddAsync(supermarket);
                 return RedirectToAction(nameof(Index));
             }
             return View(supermarket);
         }
 
         // GET: Supermarkets/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                return View(await _supermarkets.GetByIdAsync(id));
             }
-
-            var supermarket = await context.Supermarkets.FindAsync(id);
-            if (supermarket == null)
+            catch (Exception)
             {
-                return NotFound();
+                return BadRequest();
             }
-            return View(supermarket);
         }
 
         // POST: Supermarkets/Edit/5
@@ -84,50 +74,31 @@ namespace ShoppingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Address")] Supermarket supermarket)
         {
-            if (id != supermarket.Id)
-            {
-                return NotFound();
-            }
+            try
+                {
+                    await _supermarkets.EditAsync(supermarket);
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    context.Update(supermarket);
-                    await context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch
                 {
-                    if (!SupermarketExists(supermarket.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return BadRequest();
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(supermarket);
         }
 
         // GET: Supermarkets/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                await _supermarkets.DeleteAsync(id);
 
-            var supermarket = await context.Supermarkets
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supermarket == null)
+                return RedirectToAction(nameof(Index));
+            }
+            catch
             {
-                return NotFound();
+                return View();
             }
-
-            return View(supermarket);
         }
 
         // POST: Supermarkets/Delete/5
@@ -135,15 +106,9 @@ namespace ShoppingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var supermarket = await context.Supermarkets.FindAsync(id);
-            context.Supermarkets.Remove(supermarket);
-            await context.SaveChangesAsync();
+            await _supermarkets.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool SupermarketExists(int id)
-        {
-            return context.Supermarkets.Any(e => e.Id == id);
-        }
     }
 }

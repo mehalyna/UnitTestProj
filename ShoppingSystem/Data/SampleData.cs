@@ -13,8 +13,8 @@ namespace ShoppingSystem.Data
                 return;
             Customer[] customers = new Customer[]
             {
-                new Customer {FirstName = "Sergii", LastName = "Mykyteiek", Address = "Kyiv", Discount = "5"},
-                new Customer {FirstName = "Danyl", LastName = "Korotych", Address = "Zaporizhzhia", Discount = "7"},
+                new Customer {FirstName = "Ramil", LastName = "Naum", Address = "Los-Ang", Discount = "5"},
+                new Customer {FirstName = "Bob", LastName = "Dillan", Address = "Berlin", Discount = "7"},
                 new Customer {FirstName = "Kile", LastName = "Rise", Address = "London", Discount = "0"},
                 new Customer {FirstName = "John", LastName = "Konor", Address = "Vashington", Discount = "3"},
                 new Customer {FirstName = "Tony", LastName = "Stark", Address = "Florida", Discount = "5"},

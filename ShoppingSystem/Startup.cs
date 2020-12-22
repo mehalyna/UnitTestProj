@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ShoppingSystem.Data;
+using ShoppingSystem.Services;
 
 namespace ShoppingSystem
 {
@@ -21,6 +22,11 @@ namespace ShoppingSystem
         {
             services.AddDbContext<ShoppingContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<ICustomers, CustomersService>();
+            services.AddScoped<ISupermarkets, SupermarketsService>();
+            services.AddScoped<IOrders, OrdersService>();
+            services.AddScoped<IProducts, ProductsService>();
+            services.AddScoped<IOrderDetails, OrderDetailsService>();
             services.AddControllersWithViews();
         }
 
